@@ -32,16 +32,74 @@ app.post('/register', async function(req,res){
     const user = new User({
         name:name,
         surname:surname,
-        age:age,
-        number,
-        email,
-        password
+        age: parseInt(age),
+        number: parseInt(number),
+        email: email,
+        password: password
     })
     // console.log(user,"user")
 
     await user.save()
     res.send("registeration done")
 
+})
+
+app.get("/find", async(req,res)=>{
+    const {email} = req.body;
+    if(!email) return res.send("Email is required..")
+
+
+        const user = await  User.find({ email: email }).select("-number -age")
+        console.log(user,"users list is here")
+        if(user.length){
+            return res.send(user[0])
+        }
+        return res.send("no user found.")
+        // return res.send("Fetched..")
+
+
+    // const user = await  User.find({ email: email, number: number })
+    // // // return[{array}]
+    // // const user = await User.findById(id)
+    // // // return {object}
+    // // const user = await User.findOne({name : "meghali"})
+    // //     // return {object}
+
+})
+
+app.patch("/update/:id", async (req,res)=>{
+        const {age,number} = req.body;
+        const{ id }= req.params
+
+        if(!id ) return res.send("id  is required..")
+        if(!age) return res.send("age is required..")
+        if(!number) return res.send("number is required..")
+
+        const updatedUser = await User.findByIdAndUpdate(id, {age, number},{ new:true })
+        
+        return res.json({message:"data updated", data: updatedUser })
+
+})
+// task from sir
+app.put("/update/:id", async (req,res)=>{
+    const {age,number} = req.body;
+    const{ id }= req.params
+
+    if(!id ) return res.send("id  is required..")
+    if(!age) return res.send("age is required..")
+    if(!number) return res.send("number is required..")
+
+    const updatedUser = await User.findByIdAndUpdate(id, {age, number},{ new:true })
+    
+    return res.json({message:"data updated", data: updatedUser })
+
+})
+app.delete("/delete", async function(req,res){
+    const {id} = req.query;
+    if(!id) return res.send("id is required..")
+
+    const deletedUser = await User.findByIdAndDelete(id)
+    return res.json({message:"user deleted", data: deletedUser })
 })
 
 mongoose.connect(process.env.MONGO_URL).then(()=>{
@@ -51,3 +109,18 @@ mongoose.connect(process.env.MONGO_URL).then(()=>{
 app.listen(8000,()=>{
     console.log("listening on port 8000")
 })
+
+// const response = await axios.post("/register",{name,surname,age})
+// const {name,surname,age} = req.body
+
+
+
+// const response = await axios.post('/register/id')
+// app.post('/register/id')
+// const { id } = req.params
+
+// req.query
+// const url= '/register/?name=${name}&surname=kamble'
+// const response = await axios.post(url)
+// const { name ,surname} = req.params
+
